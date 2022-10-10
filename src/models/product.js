@@ -36,9 +36,25 @@ function addProduct(data, cb) {
     values.push(data.description);
     values.push(data.categoryID);
     values.push(data.vendorID); 
+    console.log(values);
     sqlConnection.excuteQuery(sql. values, function(err,result) {
         cb(err, result);
-    });           
+    }); 
+
 }
 
-module.exports = {listProducts, addProduct};
+function getProductDetails(data, cb){
+    let sql = `SELECT p.Name as name p.Price as price, p.Description as description,
+                if((SELECT Count(*) FROM orderDetails as od LEFT JOIN orderItems as oi ON
+                oi.orderID = od.ID WHERE oi.productID = p.ID AND od.user.ID = ? AND od.orderStatus = 1) > 0, 1, 0) AS
+                addedToCart FROM products as p WHERE p.id = ? LIMIT 1 
+    `;
+    let values = [];
+    values.push(data.userID);
+    values.push(data.productID);
+    sqlConnection.excuteQuery(sql. values, function(err,result) {
+        cb(err, result);
+    }); 
+}
+
+module.exports = {listProducts, addProduct, getProductDetails};
